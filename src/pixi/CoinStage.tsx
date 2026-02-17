@@ -33,9 +33,8 @@ export function CoinStage(props: {
     <div ref={ref} style={{ position: 'absolute', inset: 0 }}>
       {hasSize ? (
         <Application
-          // If Pixi initialises at 1x1, it may not resize just from prop changes.
-          // Remount on size changes + keep auto-resize to container.
-          key={`${w}x${h}`}
+          // Mount once after we have a real size.
+          // Avoid remounting on every layout resize (can cause visible flicker on mobile).
           width={w}
           height={h}
           resizeTo={ref}

@@ -37,11 +37,28 @@
   grid-template-rows: minmax(280px, 1fr) auto;
 }
 
+@media (orientation: portrait) {
+  .layout {
+    grid-template-rows: auto auto;
+    align-content: start;
+  }
+
+  .stageCard {
+    height: clamp(280px, 45vh, 520px);
+    height: clamp(280px, 45svh, 520px);
+  }
+}
+
 @media (orientation: landscape) {
   .layout {
     grid-template-rows: none;
     grid-template-columns: 1.4fr 1fr;
-    align-items: stretch;
+    align-items: start;
+  }
+
+  .stageCard {
+    height: clamp(280px, 80svh, 720px);
+    height: clamp(280px, 80vh, 720px);
   }
 }
 
@@ -83,6 +100,135 @@
 .hint {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.78);
+}
+
+.history {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyHeaderRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.historyHeader {
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.historyButton {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.historyButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.batchInput {
+  flex: 1;
+  text-align: left;
+  line-height: normal;
+}
+
+.batchToggle {
+  display: inline-flex;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.batchToggleBtn {
+  border: 0;
+  border-radius: 0;
+}
+
+.batchToggleBtn + .batchToggleBtn {
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.batchToggleActive {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyPagination {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.historyPageInfo {
+  opacity: 0.8;
+  font-size: 12px;
+  text-align: center;
+  flex: 1;
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 12px;
+}
+
+.historyMeta {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.historyMain {
+  opacity: 0.95;
+  text-transform: capitalize;
+}
+
+.historyOutcome {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.historyOutcome.win {
+  color: rgba(120, 255, 180, 0.95);
+}
+
+.historyOutcome.lose {
+  color: rgba(255, 140, 140, 0.95);
+}
+
+.historyEmpty {
+  font-size: 12px;
+  opacity: 0.7;
 }
 
 .loading {
