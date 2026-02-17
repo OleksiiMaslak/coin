@@ -45,6 +45,14 @@ function App() {
   const tossSfx = useSfx('/coin-drop-sound.mp3', { volume: 0.65 })
   const landSfx = useSfx('/coin-landing-sound.mp3', { volume: 0.75 })
 
+  const audioUnlockedRef = useRef(false)
+  const unlockAudio = () => {
+    if (audioUnlockedRef.current) return
+    audioUnlockedRef.current = true
+    tossSfx.unlock()
+    landSfx.unlock()
+  }
+
   const latestRoundIdRef = useRef(state.roundId)
   const landingTimerRef = useRef<number | null>(null)
 
@@ -62,11 +70,13 @@ function App() {
   }, [])
 
   const startHeads = () => {
+    unlockAudio()
     tossSfx.play()
     startRound('heads')
   }
 
   const startTails = () => {
+    unlockAudio()
     tossSfx.play()
     startRound('tails')
   }
@@ -80,6 +90,8 @@ function App() {
   const startBatch = (choice: 'heads' | 'tails', count: number) => {
     const safeCount = Math.max(1, Math.min(BATCH_MAX_TOSSES, Math.floor(count)))
     if (state.status === 'flipping') return
+
+    unlockAudio()
 
     batchRef.current = { running: true, choice, remaining: safeCount }
     setBatchChoice(choice)
@@ -155,7 +167,7 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app" onPointerDown={unlockAudio}>
       <header className="header">
         <div className="title">Coin Toss</div>
         <div className="subtitle">Pick Heads or Tails, then watch the flip.</div>
