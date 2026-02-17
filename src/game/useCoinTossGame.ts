@@ -11,33 +11,12 @@ import type { CoinSide, GameMessage, GameState } from './types'
 const MESSAGE_MS = 2500
 const REQUEST_TIMEOUT_MS = 8000
 
-function formatSide(side: CoinSide) {
-  return side === 'heads' ? 'Heads' : 'Tails'
-}
-
 function pickMessage(playerChoice: CoinSide, result: CoinSide): GameMessage {
-  const choiceLabel = formatSide(playerChoice)
-  const resultLabel = formatSide(result)
-
   if (playerChoice === result) {
-    const options = [
-      `Called it — ${resultLabel}!`,
-      `Nice read. ${resultLabel} it is.`,
-      `That’s a clean pick: ${resultLabel}.`,
-      `${resultLabel} lands. Great guess.`,
-      `Big brain moment — ${resultLabel}.`,
-    ]
-    return options[Math.floor(Math.random() * options.length)]
+    return 'You Win!'
   }
 
-  const options = [
-    `Ahh, ${resultLabel} this time. Run it back.`,
-    `So close… ${resultLabel} had other plans.`,
-    `Not your day: ${resultLabel}. Again?`,
-    `Your pick was ${choiceLabel}. The coin said ${resultLabel}.`,
-    `${resultLabel} lands — revenge toss?`,
-  ]
-  return options[Math.floor(Math.random() * options.length)]
+  return 'You Lose!'
 }
 
 export function useCoinTossGame() {
