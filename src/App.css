@@ -145,6 +145,7 @@
   flex: 1;
   text-align: left;
   line-height: normal;
+  font-size: 16px;
 }
 
 .batchToggle {
