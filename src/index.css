@@ -1,0 +1,38 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.94);
+  background-color: #121a33;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(1000px 700px at 18% 12%, rgba(132, 168, 255, 0.28), transparent 60%),
+    radial-gradient(900px 600px at 92% 88%, rgba(120, 220, 205, 0.20), transparent 55%),
+    radial-gradient(700px 500px at 50% 50%, rgba(255, 255, 255, 0.06), transparent 60%),
+    #121a33;
+}
+
+* {
+  box-sizing: border-box;
+}

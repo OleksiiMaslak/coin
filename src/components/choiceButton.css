@@ -1,0 +1,31 @@
+.choiceButton {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.94);
+  padding: 14px 14px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.choiceButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(145, 170, 255, 0.70);
+}
+
+.choiceButton:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+.choiceButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
