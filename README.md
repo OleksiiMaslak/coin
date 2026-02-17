@@ -4,7 +4,7 @@ Small “coin toss” game with Pixi.js animation, a mock API, sound effects, ba
 
 ## Features
 
-- **Single toss**: pick Heads/Tails → flip animation → smooth settle to the API result → Win/Lose toast.
+- **Single toss**: pick Heads/Tails → toss + in-air spin → landing/settle to the API result → Win/Lose toast.
 - **Batch tosses**: quick actions ×5 / ×10, or a custom count (up to 50) + **Stop**.
 - **History**: Redux Toolkit + localStorage (capped length), preview + expandable list with pagination.
 - **Sound**: “toss” and “landing” SFX with reliable mobile playback (unlock on first user interaction + a small audio element pool).
@@ -53,9 +53,9 @@ Static files live in `public/`:
 
 - `src/App.tsx` — UI, single/batch flow, history UI
 - `src/api/mockCoinToss.ts` — mock API (random Heads/Tails), delay, AbortSignal
-- `src/game/useCoinTossGame.ts` — round state machine, timeouts/errors, “animation + API” orchestration
+- `src/game/useCoinTossGame.ts` — round state machine, timeouts/errors, starts the mock request when the round enters `flipping`
 - `src/pixi/CoinStage.tsx` — Pixi `<Application>` + responsive resize-to-container
-- `src/pixi/Coin.tsx` — flip/settle animation (Pixi ticker) + `onLanding`/`onSettled` callbacks
+- `src/pixi/Coin.tsx` — 3-stage animation (toss → in-air spin → landing) + `onLanding`/`onSettled` callbacks
 - `src/pixi/useTexture.ts` — texture loading (Assets.load) with fallback
 - `src/pixi/extendPixi.ts` — registers Pixi classes for JSX intrinsic elements; imported in `src/main.tsx`
 - `src/hooks/useSfx.ts` — SFX hook (pool + `unlock()` + `play()`)
@@ -69,7 +69,9 @@ Static files live in `public/`:
 - **`extendPixi` for JSX intrinsic elements**: required in v8 so elements like `pixiGraphics` render correctly.
 - **Avoid remounting `<Application>` on resize**: prevents canvas flicker during layout changes; use `resizeTo` instead.
 - **ResizeObserver for sizing**: stable container measurements and avoids a “1×1 canvas” at startup.
-- **Parallel “animation + API” flow**: the flip starts immediately, and the final settle happens after the API response, reducing perceived latency.
+- **Parallel “animation + API” flow**: animation starts immediately; landing/settle happens only after the API response.
+- **StrictMode-safe request start**: the mock request is started from an effect when state is actually `flipping`, avoiding races with very fast responses (e.g. `delay = 0`).
+- **3-stage animation**: toss up → continuous in-air spin while waiting → landing + settle after the result is known.
 - **Mobile audio**: call `unlock()` on first user interaction + use an audio pool so rapid repeats (especially in batch mode) still play.
 - **History via Redux + persistence**: predictable data model for UI (preview/pagination) and survives reloads; the **cap** prevents localStorage from growing indefinitely.
 - **Batch mode without per-toss toasts**: suppresses message spam so UI stays stable and fast.

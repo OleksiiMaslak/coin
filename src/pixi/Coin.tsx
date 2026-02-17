@@ -15,8 +15,22 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
 
+function clamp01(t: number) {
+  return Math.max(0, Math.min(1, t))
+}
+
+function easeOutCubic(t: number) {
+  const u = 1 - clamp01(t)
+  return 1 - u * u * u
+}
+
+function easeInCubic(t: number) {
+  const u = clamp01(t)
+  return u * u * u
+}
+
 /**
- * Pixi coin animation: spins until API result is known, then settles and emits callbacks.
+ * Pixi coin animation with three explicit stages: toss up → in-air spin → landing + settle.
  */
 export function Coin(props: {
   radius: number
@@ -39,9 +53,15 @@ export function Coin(props: {
   const elapsedRef = useRef(0)
   const stoppingRef = useRef(false)
   const targetPhaseRef = useRef<number | null>(null)
+  const desiredSideRef = useRef<CoinSide | null>(null)
   const settledRef = useRef(false)
   const landingPlayedRef = useRef(false)
   const lastRoundRef = useRef<number>(props.roundId)
+
+  const stageRef = useRef<'toss' | 'air' | 'land'>('toss')
+  const stageElapsedRef = useRef(0)
+  const airLiftRef = useRef(0)
+  const landStartLiftRef = useRef(0)
 
   const scaleRef = useRef(1)
   const shadowScaleRef = useRef(1)
@@ -68,8 +88,14 @@ export function Coin(props: {
     elapsedRef.current = 0
     stoppingRef.current = false
     targetPhaseRef.current = null
+    desiredSideRef.current = null
     settledRef.current = false
     landingPlayedRef.current = false
+
+    stageRef.current = 'toss'
+    stageElapsedRef.current = 0
+    airLiftRef.current = 0
+    landStartLiftRef.current = 0
 
     scaleRef.current = 1
     shadowScaleRef.current = 1
@@ -80,8 +106,11 @@ export function Coin(props: {
     if (!props.isFlipping) return
     if (!props.targetSide) return
 
-    const base = props.targetSide === 'heads' ? 0 : Math.PI
-    targetPhaseRef.current = nearestPhase(phaseRef.current, base)
+    // API result arrived: start preparing to settle.
+    // NOTE: we *don't* lock a single target phase yet, because the coin may keep spinning
+    // until the landing stage begins. We keep snapping to the nearest equivalent phase
+    // to avoid accumulating extra full turns after the response.
+    desiredSideRef.current = props.targetSide
     stoppingRef.current = true
   }, [props.isFlipping, props.targetSide])
 
@@ -91,27 +120,20 @@ export function Coin(props: {
     const dt = ticker.deltaMS / 1000
     elapsedRef.current += dt
 
+    const TOSS_UP_SECONDS = 0.35
+    const LAND_SECONDS = 0.28
+    const AIR_LIFT = props.radius * 0.55
+    const AIR_BOB = props.radius * 0.05
+
     const smooth = 1 - Math.exp(-dt * 14)
 
-    // Scale pulse: noticeably larger during toss, then smoothly back.
-    const tossDuration = 1.1
-    const tossT = Math.min(1, elapsedRef.current / tossDuration)
-    const pulse = props.isFlipping ? Math.sin(Math.PI * tossT) : 0
-    const amplitude = 0.38
-    const targetScale = props.isFlipping ? 1 + pulse * amplitude : 1
-    scaleRef.current += (targetScale - scaleRef.current) * smooth
-
-    // Shadow: anchored to the ground, always present; during toss it becomes larger + lighter.
-    const heightT = props.isFlipping ? pulse : 0
-    const targetShadowAlpha = lerp(shadowBaseAlpha, 0.25, heightT)
-    const targetShadowScale = lerp(0.92, 1.28, heightT)
-    shadowAlphaRef.current += (targetShadowAlpha - shadowAlphaRef.current) * smooth
-    shadowScaleRef.current += (targetShadowScale - shadowScaleRef.current) * smooth
-
     const floatY = Math.sin(elapsedRef.current * 1.6) * (props.radius * 0.03)
-    const liftY = props.isFlipping ? -pulse * (props.radius * 0.55) : 0
 
     if (!props.isFlipping) {
+      stageRef.current = 'toss'
+      stageElapsedRef.current = 0
+      airLiftRef.current = 0
+
       const cos = Math.cos(phaseRef.current)
       const sx = Math.max(0.08, Math.abs(cos))
       coinRef.current.scale.set(sx * scaleRef.current, 1 * scaleRef.current)
@@ -128,10 +150,64 @@ export function Coin(props: {
 
     const minSpinSeconds = 0.9
 
+    // --- Stage handling ---
+    stageElapsedRef.current += dt
+
+    if (stoppingRef.current && desiredSideRef.current && stageRef.current !== 'land') {
+      const base = desiredSideRef.current === 'heads' ? 0 : Math.PI
+      targetPhaseRef.current = nearestPhase(phaseRef.current, base)
+    }
+
+    // Enter landing stage when we are allowed to settle.
+    const canStartLanding =
+      stoppingRef.current && elapsedRef.current >= minSpinSeconds && desiredSideRef.current !== null
+
+    if (canStartLanding && stageRef.current !== 'land') {
+      stageRef.current = 'land'
+      stageElapsedRef.current = 0
+      landStartLiftRef.current = airLiftRef.current
+
+      const base = desiredSideRef.current === 'heads' ? 0 : Math.PI
+      targetPhaseRef.current = nearestPhase(phaseRef.current, base)
+    }
+
+    let targetLift = 0
+    let targetScale = 1
+
+    if (stageRef.current === 'toss') {
+      const t = stageElapsedRef.current / TOSS_UP_SECONDS
+      const up = easeOutCubic(t)
+      targetLift = AIR_LIFT * up
+      targetScale = 1 + Math.sin(Math.PI * clamp01(t)) * 0.38
+
+      if (t >= 1) {
+        stageRef.current = 'air'
+        stageElapsedRef.current = 0
+      }
+    } else if (stageRef.current === 'air') {
+      targetLift = AIR_LIFT + Math.sin(elapsedRef.current * 2.3) * AIR_BOB
+      targetScale = 1.08
+    } else {
+      const t = stageElapsedRef.current / LAND_SECONDS
+      const down = easeInCubic(t)
+      targetLift = lerp(landStartLiftRef.current, 0, down)
+      targetScale = lerp(1.06, 1, down)
+    }
+
+    airLiftRef.current += (targetLift - airLiftRef.current) * smooth
+    scaleRef.current += (targetScale - scaleRef.current) * smooth
+
+    const height01 = AIR_LIFT > 0 ? clamp01(airLiftRef.current / AIR_LIFT) : 0
+    const targetShadowAlpha = lerp(shadowBaseAlpha, 0.25, height01)
+    const targetShadowScale = lerp(0.92, 1.28, height01)
+    shadowAlphaRef.current += (targetShadowAlpha - shadowAlphaRef.current) * smooth
+    shadowScaleRef.current += (targetShadowScale - shadowScaleRef.current) * smooth
+
     if (!stoppingRef.current) {
       // Free spin while waiting for API.
       phaseRef.current += velocityRef.current * dt
-      velocityRef.current *= Math.pow(0.985, ticker.deltaTime)
+      velocityRef.current *= Math.pow(0.995, ticker.deltaTime)
+      velocityRef.current = Math.max(14, velocityRef.current)
     } else if (elapsedRef.current < minSpinSeconds || targetPhaseRef.current === null) {
       phaseRef.current += velocityRef.current * dt
     } else {
@@ -168,7 +244,7 @@ export function Coin(props: {
     const cos = Math.cos(phaseRef.current)
     const sx = Math.max(0.06, Math.abs(cos))
     coinRef.current.scale.set(sx * scaleRef.current, 1 * scaleRef.current)
-    coinRef.current.position.y = floatY + liftY
+    coinRef.current.position.y = floatY - airLiftRef.current
 
     if (headsRef.current) headsRef.current.visible = cos >= 0
     if (tailsRef.current) tailsRef.current.visible = cos < 0

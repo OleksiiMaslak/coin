@@ -8,7 +8,7 @@ import { useSfx } from './hooks/useSfx'
 import { addEntry, MAX_ENTRIES } from './store/historySlice'
 import { useAppDispatch, useAppSelector } from './store/hooks'
 
-const LANDING_SFX_DELAY_MS = 700
+const LANDING_SFX_DELAY_MS = 500
 const HISTORY_PREVIEW_COUNT = 5
 const HISTORY_PAGE_SIZE = 10
 const BATCH_MAX_TOSSES = 50
