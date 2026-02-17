@@ -15,6 +15,9 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
 
+/**
+ * Pixi coin animation: spins until API result is known, then settles and emits callbacks.
+ */
 export function Coin(props: {
   radius: number
   roundId: number
@@ -105,7 +108,6 @@ export function Coin(props: {
     shadowAlphaRef.current += (targetShadowAlpha - shadowAlphaRef.current) * smooth
     shadowScaleRef.current += (targetShadowScale - shadowScaleRef.current) * smooth
 
-    // Idle look: tiny float
     const floatY = Math.sin(elapsedRef.current * 1.6) * (props.radius * 0.03)
     const liftY = props.isFlipping ? -pulse * (props.radius * 0.55) : 0
 
@@ -131,7 +133,6 @@ export function Coin(props: {
       phaseRef.current += velocityRef.current * dt
       velocityRef.current *= Math.pow(0.985, ticker.deltaTime)
     } else if (elapsedRef.current < minSpinSeconds || targetPhaseRef.current === null) {
-      // Keep spinning a bit even if API is very fast.
       phaseRef.current += velocityRef.current * dt
     } else {
       // Spring settle to target.
@@ -188,7 +189,6 @@ export function Coin(props: {
           const r = props.radius
           g.clear()
 
-          // Coin-shaped shadow: layered circles (soft edge without filters).
           g.circle(0, 0, r)
           g.fill({ color: 0x000000, alpha: 0.06 })
 

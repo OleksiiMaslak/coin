@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+/**
+ * Tracks an element's rendered width/height.
+ *
+ * Uses ResizeObserver when available, with a window resize fallback.
+ */
 export function useElementSize<T extends HTMLElement>() {
   const ref = useRef<T | null>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -13,7 +18,6 @@ export function useElementSize<T extends HTMLElement>() {
       setSize({ width: rect.width, height: rect.height })
     }
 
-    // Ensure we don't stay at 0x0 on first paint.
     measureNow()
 
     const onWindowResize = () => measureNow()

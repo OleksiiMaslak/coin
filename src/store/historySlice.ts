@@ -2,6 +2,9 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { CoinSide } from '../game/types'
 
+/**
+ * Redux slice for coin toss history, persisted to localStorage with a fixed max length.
+ */
 export type TossHistoryEntry = {
   id: string
   ts: number

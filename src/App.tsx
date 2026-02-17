@@ -4,7 +4,7 @@ import { ChoiceButton } from './components/ChoiceButton'
 import { ResultPopup } from './components/ResultPopup'
 import { useCoinTossGame } from './game/useCoinTossGame'
 import { CoinStage } from './pixi/CoinStage'
-import { useSfx } from './audio/useSfx'
+import { useSfx } from './hooks/useSfx'
 import { addEntry, MAX_ENTRIES } from './store/historySlice'
 import { useAppDispatch, useAppSelector } from './store/hooks'
 
@@ -13,6 +13,9 @@ const HISTORY_PREVIEW_COUNT = 5
 const HISTORY_PAGE_SIZE = 10
 const BATCH_MAX_TOSSES = 50
 
+/**
+ * Root UI: wires game state, Pixi stage, audio, batch tosses, and history.
+ */
 function App() {
   const { state, startRound, onCoinSettled } = useCoinTossGame()
   const dispatch = useAppDispatch()

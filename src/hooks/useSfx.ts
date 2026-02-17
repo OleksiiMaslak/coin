@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+/**
+ * Sound-effect hook.
+ *
+ * Uses a small HTMLAudioElement pool for more reliable rapid replays (especially on mobile),
+ * and exposes an explicit `unlock()` to satisfy mobile autoplay policies via a user gesture.
+ */
 export function useSfx(url: string, options?: { volume?: number }) {
   const poolRef = useRef<HTMLAudioElement[]>([])
   const poolIndexRef = useRef(0)
@@ -18,7 +24,6 @@ export function useSfx(url: string, options?: { volume?: number }) {
       ;(audio as any).playsInline = true
       pool.push(audio)
 
-      // Helps on some browsers: try to warm up decoding.
       try {
         audio.load()
       } catch {
@@ -80,7 +85,6 @@ export function useSfx(url: string, options?: { volume?: number }) {
       return
     }
 
-    // Non-promise browsers: best effort.
     unlockedRef.current = true
     try {
       audio.pause()
@@ -103,14 +107,12 @@ export function useSfx(url: string, options?: { volume?: number }) {
     audio.volume = volume
 
     try {
-      // Restart the sound for rapid clicks.
       audio.currentTime = 0
     } catch {
       // ignore
     }
 
     const p = audio.play()
-    // Autoplay policies can reject; ignore silently.
     if (p && typeof (p as Promise<void>).catch === 'function') {
       ;(p as Promise<void>).catch(() => {})
     }

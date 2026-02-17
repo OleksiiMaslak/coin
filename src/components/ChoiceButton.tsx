@@ -1,5 +1,8 @@
-import './choiceButton.css'
+import '../styles/choiceButton.css'
 
+/**
+ * Primary action button used for choosing Heads/Tails and batch actions.
+ */
 export function ChoiceButton(props: {
   label: string
   disabled?: boolean

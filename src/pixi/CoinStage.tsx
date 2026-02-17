@@ -4,6 +4,9 @@ import type { CoinSide } from '../game/types'
 import { useElementSize } from '../hooks/useElementSize'
 import { Coin } from './Coin'
 
+/**
+ * Pixi stage wrapper: owns the <Application/> and keeps it sized to its container.
+ */
 export function CoinStage(props: {
   roundId: number
   isFlipping: boolean
@@ -33,8 +36,7 @@ export function CoinStage(props: {
     <div ref={ref} style={{ position: 'absolute', inset: 0 }}>
       {hasSize ? (
         <Application
-          // Mount once after we have a real size.
-          // Avoid remounting on every layout resize (can cause visible flicker on mobile).
+          // Mount after size is known; avoid remount flicker on layout changes.
           width={w}
           height={h}
           resizeTo={ref}

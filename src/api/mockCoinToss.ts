@@ -1,5 +1,10 @@
 import type { CoinSide } from '../game/types'
 
+/**
+ * Mock async API for coin toss results.
+ *
+ * Returns a random side after a short delay and supports aborting via AbortSignal.
+ */
 export interface CoinTossResponse {
   result: CoinSide
 }
